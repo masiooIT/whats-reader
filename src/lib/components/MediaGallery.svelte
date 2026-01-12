@@ -157,12 +157,19 @@ async function downloadSelected(): Promise<void> {
 
 		for (let i = 0; i < selected.length; i++) {
 			const item = selected[i];
-			const entry = item.media._zipEntry;
-			if (!entry) continue;
+			
+			// Get the blob from either the already-loaded blob or from the zip entry
+			let arrayBuffer: ArrayBuffer;
+			if (item.media.blob) {
+				arrayBuffer = await item.media.blob.arrayBuffer();
+			} else if (item.media._zipEntry) {
+				arrayBuffer = await item.media._zipEntry.async('arraybuffer');
+			} else {
+				continue;
+			}
 
 			const filename = makeUniqueFilename(item.name, seenNames);
 			const folder = zip.folder(item.type) ?? zip;
-			const arrayBuffer = await entry.async('arraybuffer');
 			folder.file(filename, arrayBuffer);
 
 			downloadProgress = Math.round(((i + 1) / total) * 100);

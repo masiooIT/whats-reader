@@ -116,6 +116,11 @@ async function loadVideoFrames(): Promise<void> {
 }
 
 async function loadMediaBlob(): Promise<Blob> {
+	// If blob is already loaded (e.g., from IndexedDB), return it
+	if (item.media.blob) {
+		return item.media.blob;
+	}
+	// Otherwise, load from ZIP entry
 	if (!item.media._zipEntry) {
 		throw new Error('No ZIP entry for media file');
 	}

@@ -121,7 +121,7 @@ const bubbleClass = $derived(
 const bubbleWidthClass = $derived(
 	message.isMediaMessage &&
 		message.mediaType === 'audio' &&
-		message.mediaFile?._zipEntry
+		(message.mediaFile?._zipEntry || message.mediaFile?.blob)
 		? 'min-w-[280px] max-w-[90%] sm:max-w-[400px]'
 		: 'max-w-[75%]',
 );
@@ -170,7 +170,7 @@ $effect(() => {
 });
 
 // Check if this message has an actual media file that can be loaded
-const hasMediaFile = $derived(message.mediaFile?._zipEntry);
+const hasMediaFile = $derived(message.mediaFile?._zipEntry || message.mediaFile?.blob);
 
 // Check for cached transcription on mount
 $effect(() => {

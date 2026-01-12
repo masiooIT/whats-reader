@@ -96,7 +96,8 @@ export async function getImageThumbnailUrl(
 	options?: { maxSize?: number; quality?: number },
 ): Promise<string | null> {
 	if (media.type !== 'image') return null;
-	if (!media._zipEntry) return null;
+	// Need either a blob or a zip entry to load the image
+	if (!media.blob && !media._zipEntry) return null;
 
 	const key = media.path;
 	const cached = thumbnailUrlCache.get(key);
@@ -118,14 +119,21 @@ export async function getImageThumbnailUrl(
 			const maxSize = options?.maxSize ?? DEFAULT_MAX_SIZE;
 			const quality = options?.quality ?? DEFAULT_QUALITY;
 
-			const arrayBuffer = await media._zipEntry?.async('arraybuffer');
-			if (!arrayBuffer) return null;
+			// Use existing blob if available (e.g., from IndexedDB), otherwise load from ZIP
+			let blob: Blob;
+			if (media.blob) {
+				blob = media.blob;
+			} else {
+				const arrayBuffer = await media._zipEntry?.async('arraybuffer');
+				if (!arrayBuffer) return null;
+				const mimeType = getImageMimeType(media.name);
+				blob = new Blob([arrayBuffer], { type: mimeType });
+			}
 
-			const mimeType = getImageMimeType(media.name);
-			const blob = new Blob([arrayBuffer], { type: mimeType });
+			const effectiveMimeType = blob.type || getImageMimeType(media.name);
 
 			// Special handling for SVG files
-			if (mimeType === 'image/svg+xml') {
+			if (effectiveMimeType === 'image/svg+xml') {
 				// For SVG, we can directly create an object URL
 				// SVG files are usually small and scale perfectly, but still follow
 				// the same cache eviction policy as raster images for consistency

@@ -612,6 +612,15 @@ export async function loadMediaFile(media: MediaFile): Promise<string> {
 		return media.url;
 	}
 
+	// If blob is already available (e.g., from IndexedDB), create URL directly
+	if (media.blob && !media.url) {
+		const url = URL.createObjectURL(media.blob);
+		loadedMediaCache.set(media.path, { url, refCount: 1 });
+		media.url = url;
+		media._loaded = true;
+		return url;
+	}
+
 	// Check if in cache
 	const cached = loadedMediaCache.get(media.path);
 	if (cached) {
