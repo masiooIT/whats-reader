@@ -555,10 +555,26 @@ export function parseChat(
 	// Try to extract chat title from filename
 	let title = filename
 		.replace(/\.txt$/i, '')
+		// English
 		.replace(/^WhatsApp Chat with /i, '')
 		.replace(/^WhatsApp Chat - /i, '')
+		// Italian
+		.replace(/^Chat WhatsApp con /i, '')
+		.replace(/^Chat di WhatsApp con /i, '')
+		// Portuguese
 		.replace(/^Conversa do WhatsApp com /i, '')
 		.replace(/^Chat do WhatsApp com /i, '')
+		// Spanish
+		.replace(/^Chat de WhatsApp con /i, '')
+		// French
+		.replace(/^Discussion WhatsApp avec /i, '')
+		.replace(/^Chat WhatsApp avec /i, '')
+		// German
+		.replace(/^WhatsApp-Chat mit /i, '')
+		.replace(/^WhatsApp Chat mit /i, '')
+		// Dutch
+		.replace(/^WhatsApp-chat met /i, '')
+		.replace(/^WhatsApp Chat met /i, '')
 		.trim();
 
 	// If title is still generic, use participants

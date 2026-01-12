@@ -358,6 +358,18 @@ export async function parseZipFile(
 						/^(Chat|Conversa|Plausch|チャット|聊天)[-_\s]+with[-_\s]+/i,
 						'',
 					) // "Chat with" prefix
+					// Italian patterns
+					.replace(/^Chat WhatsApp con /i, '')
+					.replace(/^Chat di WhatsApp con /i, '')
+					// Spanish patterns
+					.replace(/^Chat de WhatsApp con /i, '')
+					// French patterns
+					.replace(/^Discussion WhatsApp avec /i, '')
+					.replace(/^Chat WhatsApp avec /i, '')
+					// German patterns
+					.replace(/^WhatsApp-Chat mit /i, '')
+					// Dutch patterns
+					.replace(/^WhatsApp-chat met /i, '')
 					.replace(/\+/g, ' ') // Replace + with space
 					.trim();
 			}
