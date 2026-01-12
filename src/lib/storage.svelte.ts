@@ -285,20 +285,24 @@ export async function saveChat(chat: ParsedZipChat): Promise<string> {
 		const database = await initDB();
 		const storedChat = chatToStorable(chat);
 
-		// Start a transaction for both stores
-		const transaction = database.transaction([STORE_CHATS, STORE_MEDIA], 'readwrite');
-		const chatStore = transaction.objectStore(STORE_CHATS);
-		const mediaStore = transaction.objectStore(STORE_MEDIA);
+		// First, save the chat data in its own transaction
+		const chatTransaction = database.transaction(STORE_CHATS, 'readwrite');
+		const chatStore = chatTransaction.objectStore(STORE_CHATS);
 
-		// Save chat data
 		await new Promise<void>((resolve, reject) => {
 			const request = chatStore.put(storedChat);
 			request.onerror = () => reject(request.error);
 			request.onsuccess = () => resolve();
 		});
 
-		// Load and save all media blobs
-		// We need to load them from ZIP if not already loaded
+		await new Promise<void>((resolve, reject) => {
+			chatTransaction.oncomplete = () => resolve();
+			chatTransaction.onerror = () => reject(chatTransaction.error);
+		});
+
+		// Then, load and save all media blobs in separate transactions
+		// This avoids transaction timeout issues with large media files
+		let savedMediaCount = 0;
 		for (const media of chat.mediaFiles) {
 			try {
 				// Load the media if it has a zip entry but no blob yet
@@ -308,28 +312,36 @@ export async function saveChat(chat: ParsedZipChat): Promise<string> {
 				
 				// Now save the blob if available
 				if (media.blob) {
+					const mediaTransaction = database.transaction(STORE_MEDIA, 'readwrite');
+					const mediaStore = mediaTransaction.objectStore(STORE_MEDIA);
+					
 					const storedMedia: StoredMediaBlob = {
 						chatId: storedChat.id,
 						path: media.path,
 						blob: media.blob,
 						mimeType: media.blob.type,
 					};
+					
 					await new Promise<void>((resolve, reject) => {
 						const request = mediaStore.put(storedMedia);
 						request.onerror = () => reject(request.error);
 						request.onsuccess = () => resolve();
 					});
+					
+					await new Promise<void>((resolve, reject) => {
+						mediaTransaction.oncomplete = () => resolve();
+						mediaTransaction.onerror = () => reject(mediaTransaction.error);
+					});
+					
+					savedMediaCount++;
 				}
 			} catch (mediaError) {
 				// Log but don't fail the whole save for individual media errors
 				console.warn(`Failed to save media ${media.name}:`, mediaError);
 			}
 		}
-
-		await new Promise<void>((resolve, reject) => {
-			transaction.oncomplete = () => resolve();
-			transaction.onerror = () => reject(transaction.error);
-		});
+		
+		console.log(`Saved chat "${chat.title}" with ${savedMediaCount}/${chat.mediaFiles.length} media files`);
 
 		// Update count
 		await updateSavedChatCount();
@@ -376,12 +388,15 @@ export async function loadAllChats(): Promise<ParsedZipChat[]> {
 				request.onsuccess = () => resolve(request.result);
 			});
 
+			console.log(`Loading chat "${storedChat.title}": found ${mediaItems.length} media blobs in IndexedDB`);
+			
 			for (const item of mediaItems) {
 				mediaBlobs.set(item.path, item.blob);
 			}
 
 			// Convert to ParsedZipChat
 			const chat = storableToChat(storedChat, mediaBlobs);
+			console.log(`Chat "${chat.title}" has ${chat.mediaFiles.filter(m => m.blob).length}/${chat.mediaFiles.length} media files with blobs`);
 			chats.push(chat);
 		}
 

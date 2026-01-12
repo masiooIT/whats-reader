@@ -297,9 +297,15 @@ async function handleFilesSelected(files: FileList) {
 					indexWorker.terminate();
 
 					// Save chat to IndexedDB for persistence across sessions
-					// Find the chat in appState (it now has all the indexed data)
-					const chatToSave = appState.chats.find((c) => c.title === chatTitle);
-					if (chatToSave && isStorageAvailable()) {
+					// Use chatData directly (not from appState) because it has the _zipEntry references
+					// needed to load media blobs. Add the indexed data to it.
+					if (isStorageAvailable() && chatData.title === chatTitle) {
+						const chatToSave = {
+							...chatData,
+							messageIndex,
+							flatItems,
+							serializedMessages,
+						};
 						saveChat(chatToSave).catch((err) => {
 							console.error('Failed to save chat to storage:', err);
 						});
