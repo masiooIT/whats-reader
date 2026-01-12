@@ -36,6 +36,16 @@ import {
 import * as m from '$lib/paraglide/messages';
 import { parseZipFile, readFileAsArrayBuffer } from '$lib/parser';
 import { appState, type ChatData } from '$lib/state.svelte';
+import {
+	initStorage,
+	loadAllChats,
+	saveChat,
+	deleteChat,
+	clearAllStorage,
+	storageState,
+	isStorageAvailable,
+	generateChatId,
+} from '$lib/storage.svelte';
 import { setTranscriptionLanguage } from '$lib/transcription.svelte';
 
 // Detect if running in Electron
@@ -70,6 +80,43 @@ $effect(() => {
 	if (browser && isElectron) {
 		initAutoUpdater();
 	}
+});
+
+// Initialize storage and load saved chats on startup
+let isLoadingSavedChats = $state(false);
+let hasInitializedStorage = false;
+
+async function loadSavedChatsFromStorage() {
+	if (hasInitializedStorage || !browser || !isStorageAvailable()) return;
+	hasInitializedStorage = true;
+	
+	isLoadingSavedChats = true;
+	try {
+		await initStorage();
+		const savedChats = await loadAllChats();
+		for (const chat of savedChats) {
+			appState.addChat(chat);
+			// If the chat already has flatItems and messageIndex, mark as indexed
+			if (chat.messageIndex) {
+				appState.updateChatMessageIndex(chat.title, chat.messageIndex);
+			}
+			if (chat.flatItems && chat.messagesById) {
+				appState.updateChatFlatItems(chat.title, chat.flatItems);
+			}
+			if (chat.serializedMessages) {
+				appState.updateChatSerializedMessages(chat.title, chat.serializedMessages);
+			}
+		}
+	} catch (error) {
+		console.error('Failed to load saved chats:', error);
+	} finally {
+		isLoadingSavedChats = false;
+	}
+}
+
+// Load saved chats on mount
+$effect(() => {
+	loadSavedChatsFromStorage();
 });
 
 let showStats = $state(false);
@@ -248,6 +295,15 @@ async function handleFilesSelected(files: FileList) {
 					appState.updateChatFlatItems(chatTitle, flatItems);
 					appState.updateChatSerializedMessages(chatTitle, serializedMessages);
 					indexWorker.terminate();
+
+					// Save chat to IndexedDB for persistence across sessions
+					// Find the chat in appState (it now has all the indexed data)
+					const chatToSave = appState.chats.find((c) => c.title === chatTitle);
+					if (chatToSave && isStorageAvailable()) {
+						saveChat(chatToSave).catch((err) => {
+							console.error('Failed to save chat to storage:', err);
+						});
+					}
 				};
 
 				indexWorker.onerror = (err) => {
@@ -303,7 +359,29 @@ function handleSelectChat(index: number) {
 }
 
 function handleRemoveChat(index: number) {
+	// Get the chat before removing it (to get its ID for storage deletion)
+	const chatToRemove = appState.chats[index];
 	appState.removeChat(index);
+	
+	// Also remove from IndexedDB storage
+	if (chatToRemove && isStorageAvailable()) {
+		const chatId = generateChatId(chatToRemove);
+		deleteChat(chatId).catch((err) => {
+			console.error('Failed to delete chat from storage:', err);
+		});
+	}
+}
+
+async function handleClearStorage() {
+	if (!confirm(m.storage_clear_confirm())) return;
+	
+	try {
+		await clearAllStorage();
+		// Optionally also clear in-memory chats
+		appState.reset();
+	} catch (error) {
+		console.error('Failed to clear storage:', error);
+	}
 }
 
 function handleLanguageChange(chatTitle: string, language: string) {
@@ -820,6 +898,26 @@ const currentUser = $derived.by(() => {
 						{loadingChats}
 					/>
 				</div>
+
+				<!-- Storage status and clear button -->
+				{#if isStorageAvailable() && storageState.savedChatCount > 0}
+					<div class="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+						<div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+							<span class="flex items-center gap-1">
+								<Icon name="check" size="sm" class="text-green-500" />
+								{m.storage_saved_chats({ count: storageState.savedChatCount })}
+							</span>
+							<button
+								type="button"
+								class="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+								onclick={handleClearStorage}
+								title={m.storage_clear_all()}
+							>
+								{m.storage_clear()}
+							</button>
+						</div>
+					</div>
+				{/if}
 			</div>
 
 			<!-- Overlay for mobile sidebar -->

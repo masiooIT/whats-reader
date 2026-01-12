@@ -241,5 +241,10 @@
   "media_gallery_type_other": "Otro",
   "media_gallery_clear_filter": "Limpiar filtro",
   "media_gallery_participant_search_placeholder": "Buscar por nombre o número...",
-  "media_gallery_participant_no_match": "Ningún participante coincide con \"{query}\""
+  "media_gallery_participant_no_match": "Ningún participante coincide con \"{query}\"",
+  "storage_saved_chats": "{count} guardados",
+  "storage_clear": "Borrar",
+  "storage_clear_all": "Borrar todos los chats guardados del almacenamiento local",
+  "storage_clear_confirm": "¿Estás seguro de que deseas eliminar todos los chats guardados? Esta acción no se puede deshacer.",
+  "storage_loading": "Cargando chats guardados..."
 }

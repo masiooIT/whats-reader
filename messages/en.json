@@ -241,5 +241,10 @@
   "media_gallery_type_other": "Other",
   "media_gallery_clear_filter": "Clear filter",
   "media_gallery_participant_search_placeholder": "Search by name or number...",
-  "media_gallery_participant_no_match": "No participant matches \"{query}\""
+  "media_gallery_participant_no_match": "No participant matches \"{query}\"",
+  "storage_saved_chats": "{count} saved",
+  "storage_clear": "Clear",
+  "storage_clear_all": "Clear all saved chats from local storage",
+  "storage_clear_confirm": "Are you sure you want to delete all saved chats? This cannot be undone.",
+  "storage_loading": "Loading saved chats..."
 }

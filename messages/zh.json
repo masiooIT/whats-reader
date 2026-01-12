@@ -241,5 +241,10 @@
   "media_gallery_type_other": "其他",
   "media_gallery_clear_filter": "清除过滤器",
   "media_gallery_participant_search_placeholder": "按名称或编号搜索……",
-  "media_gallery_participant_no_match": "没有参与者匹配\"{query}\""
+  "media_gallery_participant_no_match": "没有参与者匹配\"{query}\"",
+  "storage_saved_chats": "已保存{count}个",
+  "storage_clear": "清除",
+  "storage_clear_all": "从本地存储中清除所有已保存的聊天记录",
+  "storage_clear_confirm": "您确定要删除所有已保存的聊天记录吗？此操作无法撤销。",
+  "storage_loading": "正在加载已保存的聊天记录..."
 }

@@ -241,5 +241,10 @@
   "media_gallery_type_other": "Andere",
   "media_gallery_clear_filter": "Filter löschen",
   "media_gallery_participant_search_placeholder": "Suche nach Name oder Nummer...",
-  "media_gallery_participant_no_match": "Kein Teilnehmer entspricht \"{query}\""
+  "media_gallery_participant_no_match": "Kein Teilnehmer entspricht \"{query}\"",
+  "storage_saved_chats": "{count} gespeichert",
+  "storage_clear": "Löschen",
+  "storage_clear_all": "Alle gespeicherten Chats aus dem lokalen Speicher löschen",
+  "storage_clear_confirm": "Sind Sie sicher, dass Sie alle gespeicherten Chats löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+  "storage_loading": "Gespeicherte Chats werden geladen..."
 }

@@ -241,5 +241,10 @@
   "media_gallery_type_other": "Ander",
   "media_gallery_clear_filter": "Filter wissen",
   "media_gallery_participant_search_placeholder": "Zoeken op naam of nummer...",
-  "media_gallery_participant_no_match": "Geen deelnemer komt overeen met \"{query}\""
+  "media_gallery_participant_no_match": "Geen deelnemer komt overeen met \"{query}\"",
+  "storage_saved_chats": "{count} opgeslagen",
+  "storage_clear": "Wissen",
+  "storage_clear_all": "Alle opgeslagen chats uit lokale opslag wissen",
+  "storage_clear_confirm": "Weet u zeker dat u alle opgeslagen chats wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+  "storage_loading": "Opgeslagen chats laden..."
 }

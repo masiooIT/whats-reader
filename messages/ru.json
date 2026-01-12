@@ -241,5 +241,10 @@
   "media_gallery_type_other": "Другой",
   "media_gallery_clear_filter": "Очистить фильтр",
   "media_gallery_participant_search_placeholder": "Поиск по имени или номеру...",
-  "media_gallery_participant_no_match": "Ни один участник не соответствует \"{query}\""
+  "media_gallery_participant_no_match": "Ни один участник не соответствует \"{query}\"",
+  "storage_saved_chats": "{count} сохранено",
+  "storage_clear": "Очистить",
+  "storage_clear_all": "Удалить все сохранённые чаты из локального хранилища",
+  "storage_clear_confirm": "Вы уверены, что хотите удалить все сохранённые чаты? Это действие нельзя отменить.",
+  "storage_loading": "Загрузка сохранённых чатов..."
 }

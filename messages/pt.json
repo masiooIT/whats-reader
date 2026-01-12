@@ -241,5 +241,10 @@
   "media_gallery_type_other": "Outro",
   "media_gallery_clear_filter": "Limpar filtro",
   "media_gallery_participant_search_placeholder": "Pesquisar por nome ou número...",
-  "media_gallery_participant_no_match": "Nenhum participante corresponde a \"{query}\""
+  "media_gallery_participant_no_match": "Nenhum participante corresponde a \"{query}\"",
+  "storage_saved_chats": "{count} salvas",
+  "storage_clear": "Limpar",
+  "storage_clear_all": "Limpar todas as conversas salvas do armazenamento local",
+  "storage_clear_confirm": "Tem certeza de que deseja excluir todas as conversas salvas? Esta ação não pode ser desfeita.",
+  "storage_loading": "Carregando conversas salvas..."
 }

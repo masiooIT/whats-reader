@@ -241,5 +241,10 @@
   "media_gallery_type_other": "他の",
   "media_gallery_clear_filter": "フィルターをクリア",
   "media_gallery_participant_search_placeholder": "名前または番号で検索...",
-  "media_gallery_participant_no_match": "「{query}」に一致する参加者はいません"
+  "media_gallery_participant_no_match": "「{query}」に一致する参加者はいません",
+  "storage_saved_chats": "{count}件保存済み",
+  "storage_clear": "削除",
+  "storage_clear_all": "ローカルストレージから保存済みチャットをすべて削除",
+  "storage_clear_confirm": "保存済みチャットをすべて削除してもよろしいですか？この操作は元に戻せません。",
+  "storage_loading": "保存済みチャットを読み込み中..."
 }
