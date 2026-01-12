@@ -129,6 +129,36 @@ export function generateChatId(chat: ParsedZipChat): string {
 }
 
 /**
+ * Serialize flat items for storage (create plain objects without any potential prototypes)
+ */
+function serializeFlatItems(flatItems?: FlatItem[]): FlatItem[] | undefined {
+	if (!flatItems) return undefined;
+	return flatItems.map((item) => {
+		if (item.type === 'date') {
+			return { type: 'date' as const, dateKey: item.dateKey };
+		}
+		return { type: 'message' as const, messageId: item.messageId };
+	});
+}
+
+/**
+ * Serialize messages for storage (create plain objects without any potential prototypes)
+ */
+function serializeSearchMessages(messages?: SerializedSearchMessage[]): SerializedSearchMessage[] | undefined {
+	if (!messages) return undefined;
+	return messages.map((msg) => ({
+		id: msg.id,
+		timestamp: msg.timestamp,
+		sender: msg.sender,
+		content: msg.content,
+		isSystemMessage: msg.isSystemMessage,
+		isMediaMessage: msg.isMediaMessage,
+		mediaType: msg.mediaType,
+		rawLine: msg.rawLine,
+	}));
+}
+
+/**
  * Convert a ParsedZipChat to a storable format
  */
 function chatToStorable(chat: ParsedZipChat): StoredChat {
@@ -154,11 +184,14 @@ function chatToStorable(chat: ParsedZipChat): StoredChat {
 		messageSender: media.messageSender,
 	}));
 
+	// Explicitly copy participants array to avoid any proxy/reactive objects
+	const participants = [...chat.participants];
+
 	return {
 		id: generateChatId(chat),
 		title: chat.title,
 		messages,
-		participants: chat.participants,
+		participants,
 		mediaFiles,
 		hasMedia: chat.hasMedia,
 		createdAt: new Date().toISOString(),
@@ -167,8 +200,8 @@ function chatToStorable(chat: ParsedZipChat): StoredChat {
 		messageCount: chat.messageCount,
 		mediaCount: chat.mediaCount,
 		messageIndex: chat.messageIndex ? Array.from(chat.messageIndex.entries()) : undefined,
-		flatItems: chat.flatItems,
-		serializedMessages: chat.serializedMessages,
+		flatItems: serializeFlatItems(chat.flatItems),
+		serializedMessages: serializeSearchMessages(chat.serializedMessages),
 	};
 }
 
