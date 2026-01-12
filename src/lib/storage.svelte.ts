@@ -6,6 +6,7 @@
 import { browser } from '$app/environment';
 import type { ChatMessage } from './parser/chat-parser';
 import type { MediaFile, ParsedZipChat, FlatItem, SerializedSearchMessage } from './parser/zip-parser';
+import { loadMediaFile } from './parser/zip-parser';
 
 // Database configuration
 const DB_NAME = 'whatsapp-reader';
@@ -296,20 +297,32 @@ export async function saveChat(chat: ParsedZipChat): Promise<string> {
 			request.onsuccess = () => resolve();
 		});
 
-		// Save media blobs (if loaded)
+		// Load and save all media blobs
+		// We need to load them from ZIP if not already loaded
 		for (const media of chat.mediaFiles) {
-			if (media.blob) {
-				const storedMedia: StoredMediaBlob = {
-					chatId: storedChat.id,
-					path: media.path,
-					blob: media.blob,
-					mimeType: media.blob.type,
-				};
-				await new Promise<void>((resolve, reject) => {
-					const request = mediaStore.put(storedMedia);
-					request.onerror = () => reject(request.error);
-					request.onsuccess = () => resolve();
-				});
+			try {
+				// Load the media if it has a zip entry but no blob yet
+				if (!media.blob && media._zipEntry) {
+					await loadMediaFile(media);
+				}
+				
+				// Now save the blob if available
+				if (media.blob) {
+					const storedMedia: StoredMediaBlob = {
+						chatId: storedChat.id,
+						path: media.path,
+						blob: media.blob,
+						mimeType: media.blob.type,
+					};
+					await new Promise<void>((resolve, reject) => {
+						const request = mediaStore.put(storedMedia);
+						request.onerror = () => reject(request.error);
+						request.onsuccess = () => resolve();
+					});
+				}
+			} catch (mediaError) {
+				// Log but don't fail the whole save for individual media errors
+				console.warn(`Failed to save media ${media.name}:`, mediaError);
 			}
 		}
 
