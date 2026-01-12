@@ -106,7 +106,12 @@ async function loadSavedChatsFromStorage() {
 			if (chat.serializedMessages) {
 				appState.updateChatSerializedMessages(chat.title, chat.serializedMessages);
 			}
+			// Enable auto-load media for chats loaded from storage
+			// (they already have blobs ready, no need for lazy loading)
+			autoLoadMediaByChat.set(chat.title, true);
 		}
+		// Trigger reactivity for the Map
+		autoLoadMediaByChat = new Map(autoLoadMediaByChat);
 	} catch (error) {
 		console.error('Failed to load saved chats:', error);
 	} finally {
@@ -306,9 +311,15 @@ async function handleFilesSelected(files: FileList) {
 							flatItems,
 							serializedMessages,
 						};
-						saveChat(chatToSave).catch((err) => {
-							console.error('Failed to save chat to storage:', err);
-						});
+						saveChat(chatToSave)
+							.then(() => {
+								// Enable auto-load media after saving (blobs are now in IndexedDB)
+								autoLoadMediaByChat.set(chatTitle, true);
+								autoLoadMediaByChat = new Map(autoLoadMediaByChat);
+							})
+							.catch((err) => {
+								console.error('Failed to save chat to storage:', err);
+							});
 					}
 				};
 
